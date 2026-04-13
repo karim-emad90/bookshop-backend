@@ -1,0 +1,79 @@
+{
+  "kind": "collectionType",
+  "collectionName": "books",
+  "info": {
+    "singularName": "book",
+    "pluralName": "books",
+    "displayName": "books"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "pluginOptions": {},
+  "attributes": {
+    "title": {
+      "type": "string"
+    },
+    "slug": {
+      "type": "string"
+    },
+    "description": {
+      "type": "text"
+    },
+    "author": {
+      "type": "string"
+    },
+    "publisher": {
+      "type": "string"
+    },
+    "year": {
+      "type": "integer"
+    },
+    "language": {
+      "type": "string"
+    },
+    "pages": {
+      "type": "integer"
+    },
+    "isbn13": {
+      "type": "biginteger"
+    },
+    "price": {
+      "type": "decimal"
+    },
+    "rating": {
+      "type": "decimal"
+    },
+    "reviewsCount": {
+      "type": "integer"
+    },
+    "discountPercent": {
+      "type": "decimal"
+    },
+    "coverImageUrl": {
+      "type": "media",
+      "multiple": false,
+      "allowedTypes": [
+        "images",
+        "files",
+        "videos",
+        "audios"
+      ]
+    },
+    "categories": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::category.category",
+      "inversedBy": "books"
+    },
+    "isActive": {
+      "type": "boolean"
+    },
+    "category": {
+      "type": "string"
+    },
+    "discountCode": {
+      "type": "string"
+    }
+  }
+}

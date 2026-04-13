@@ -1,19 +1,30 @@
 // scripts/linkCategories.js
 import axios from "axios";
+import dotenv from "dotenv";
 
-const API = "http://localhost:1337";
-const TOKEN = "af8d0fcd692293ee3bc660bd4c2ffdfe479547ad76138afa058727d6d996391aa7a4f9b175f092a067e457d8892c657ef050dd15e5367a80950a99bb7ca2348b1f8d290e83a453c72b9350914eda015b2d46d47f6d9f63969b2f1af290c3894797d9d5a46b383c745784b954f511a2d81178d5b4cb2404bf3c309409db8ab9bc"; // حط التوكن هنا
+dotenv.config();
 
-const client = axios.create({
-  baseURL: API,
-  headers: { Authorization: `Bearer ${TOKEN}` },
-});
+const API = process.env.STRAPI_URL;
+const TOKEN = process.env.STRAPI_TOKEN;
 
 // عندك book.category فيه documentId بتاع الـ category
 const BOOK_CATEGORY_FIELD = "category";
 
 // اسم الـ relation field داخل Book
 const BOOK_RELATION_FIELD = "categories";
+
+if (!API || !TOKEN) {
+  console.error("❌ Missing STRAPI_URL or STRAPI_TOKEN in .env");
+  process.exit(1);
+}
+
+const client = axios.create({
+  baseURL: API,
+  headers: {
+    Authorization: `Bearer ${TOKEN}`,
+    "Content-Type": "application/json",
+  },
+});
 
 const norm = (v) => (v ?? "").toString().trim().toLowerCase();
 
@@ -35,7 +46,6 @@ async function updateBookRelation(bookDocumentId, catDocumentId) {
     });
     return true;
   } catch (e) {
-    // لو مش 404/400، هنسيبها تتعامل
     const status = e.response?.status;
     if (![400, 404].includes(status)) throw e;
   }
@@ -48,6 +58,7 @@ async function updateBookRelation(bookDocumentId, catDocumentId) {
       },
     },
   });
+
   return true;
 }
 
@@ -60,8 +71,9 @@ async function run() {
   console.log("✅ Categories fetched:", categories.length);
   console.log("Sample category:", categories[0]);
 
-  // 2) Map: categoryDocumentId -> categoryDocumentId  (الأهم عندك)
+  // 2) Map: categoryDocumentId / slug / name -> categoryDocumentId
   const catMap = new Map();
+
   for (const c of categories) {
     const a = getAttrs(c);
     const docId = c.documentId ?? a.documentId;
@@ -81,7 +93,6 @@ async function run() {
   const skippedExamples = new Map();
 
   while (true) {
-    // خلي الـ pageSize 100 زي ما انت عامل
     const booksRes = await client.get(
       `/api/books?pagination[page]=${page}&pagination[pageSize]=${pageSize}`
     );
@@ -96,9 +107,13 @@ async function run() {
 
       // ✅ Strapi v5 لازم تستخدم documentId في URL
       const bookDocId = book.documentId ?? b.documentId;
+
       if (!bookDocId) {
         skipped++;
-        skippedExamples.set("(BOOK missing documentId)", (skippedExamples.get("(BOOK missing documentId)") ?? 0) + 1);
+        skippedExamples.set(
+          "(BOOK missing documentId)",
+          (skippedExamples.get("(BOOK missing documentId)") ?? 0) + 1
+        );
         continue;
       }
 
@@ -109,7 +124,10 @@ async function run() {
       if (!catDocId) {
         skipped++;
         const shown = rawCat ? rawCat.toString() : "(EMPTY category)";
-        skippedExamples.set(shown, (skippedExamples.get(shown) ?? 0) + 1);
+        skippedExamples.set(
+          shown,
+          (skippedExamples.get(shown) ?? 0) + 1
+        );
         continue;
       }
 
@@ -119,7 +137,6 @@ async function run() {
       } catch (e) {
         console.log("❌ Update failed for book:", bookDocId, "cat:", catDocId);
         console.log("   Error:", e.response?.data || e.message);
-        // لو حصلت مشكلة في كتاب واحد، نكمل بدل ما نوقف كل السكريبت
       }
     }
 
@@ -135,7 +152,9 @@ async function run() {
     .slice(0, 10);
 
   console.log("🔎 Top skipped category values:");
-  for (const [val, cnt] of topSkipped) console.log(`- ${val}  =>  ${cnt}`);
+  for (const [val, cnt] of topSkipped) {
+    console.log(`- ${val}  =>  ${cnt}`);
+  }
 }
 
 run().catch((e) => {

@@ -50,16 +50,6 @@
     "discountPercent": {
       "type": "decimal"
     },
-    "coverImageUrl": {
-      "type": "media",
-      "multiple": false,
-      "allowedTypes": [
-        "images",
-        "files",
-        "videos",
-        "audios"
-      ]
-    },
     "categories": {
       "type": "relation",
       "relation": "manyToOne",
@@ -73,6 +63,9 @@
       "type": "string"
     },
     "discountCode": {
+      "type": "string"
+    },
+    "coverImageUrl": {
       "type": "string"
     }
   }

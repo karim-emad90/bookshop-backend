@@ -447,9 +447,7 @@ export interface ApiBookBook extends Struct.CollectionTypeSchema {
       'api::category.category'
     >;
     category: Schema.Attribute.String;
-    coverImageUrl: Schema.Attribute.Media<
-      'images' | 'files' | 'videos' | 'audios'
-    >;
+    coverImageUrl: Schema.Attribute.String;
     createdAt: Schema.Attribute.DateTime;
     createdBy: Schema.Attribute.Relation<'oneToOne', 'admin::user'> &
       Schema.Attribute.Private;
